@@ -51,12 +51,13 @@ logs = r.json()['list']
 info = r.json()['pageInfo']
 rows = info['totalRows']
 size = info['pageSize']
-df = pd.DataFrame(columns=['User', 'Date', 'Comment'])
+df = pd.DataFrame(columns=['User', 'Date', 'Comment', 'fk_model_id', 'row_id'])
 for offset in range(0, rows, size):
     for item in logs:
         if item['op_type'] == 'COMMENT':
             df.loc[len(df), df.columns] = \
-                item['user'], item['updated_at'], item['description']
+                item['user'], item['updated_at'], item['description'], \
+                    item['fk_model_id'], item['row_id']
     payload = {
         'offset': offset + size
     }
@@ -65,15 +66,37 @@ for offset in range(0, rows, size):
 
 # Filter messages from last 7 days
 df['Date'] = df['Date'].apply(pd.to_datetime)
-seven_days_ago = datetime.today() - timedelta(days=7)
-df_tmp = df[df['Date'] >= seven_days_ago]
+seven_days_ago = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')
+df = df[df['Date'] >= seven_days_ago].reset_index()
+
+# Get information about the table and row
+df['Table'] = ''
+df['Row'] = ''
+for index, row in df.iterrows():
+    fk_model_id = row['fk_model_id']
+    row_id = row['row_id']
+
+    # Table information
+    endpoint = f'api/v1/db/meta/tables/{fk_model_id}'
+    url = os.path.join(base_url, endpoint)
+    r = requests.get(url, headers=headers)
+    df.loc[index, 'Table'] = r.json()['title']
+
+    # Row information
+    endpoint = f'api/v1/db/data/v1/{project_id}/{fk_model_id}/{row_id}'
+    url = os.path.join(base_url, endpoint)
+    r = requests.get(url, headers=headers)
+    df.loc[index, 'Row'] = r.json()['Id']
+
+df = df.drop(['fk_model_id', 'row_id'], axis=1)
 
 # Message to be sent via email with weekly comments
 message = f"""\
 Subject: EPND-glossary comments
 
 Weekly comments digest
-{df}
+
+{df.to_string(index=False)}
 """
 
 # SMTP configuration
