@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Automation of retrieval of comments and notification of new comments for NocoDB
+Automation of retrieval of comments and notification of new comments by email
 """
 
 import os
@@ -36,7 +36,7 @@ headers = {
     'xc-auth': token
 }
 
-# Get project id, now it basically takes the ID of the first project
+# Get project ID, now it basically takes the ID of the first project
 endpoint = 'api/v1/db/meta/projects'
 url = os.path.join(base_url, endpoint)
 r = requests.get(url, headers=headers)
@@ -69,7 +69,7 @@ df['Date'] = df['Date'].apply(pd.to_datetime)
 seven_days_ago = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')
 df = df[df['Date'] >= seven_days_ago].reset_index()
 
-# Get information about the table and row
+# Get information about the table and row that the comment was made
 df['Table'] = ''
 df['Row'] = ''
 for index, row in df.iterrows():
@@ -88,15 +88,14 @@ for index, row in df.iterrows():
     r = requests.get(url, headers=headers)
     df.loc[index, 'Row'] = r.json()['Id']
 
-df = df.drop(['fk_model_id', 'row_id'], axis=1)
-
 # Message to be sent via email with weekly comments
+df = df.drop(['fk_model_id', 'row_id'], axis=1)
+comments = df.to_string(index=False) if len(df) != 0 else \
+    'There were no comments in the past week'
 message = f"""\
-Subject: EPND-glossary comments
+Subject: EPND-glossary weekly comments digest
 
-Weekly comments digest
-
-{df.to_string(index=False)}
+{comments}
 """
 
 # SMTP configuration
