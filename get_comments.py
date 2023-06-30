@@ -12,6 +12,8 @@ import requests
 import pandas as pd
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
+from tabulate import tabulate
 
 
 # Read configuration variables
@@ -63,11 +65,17 @@ for offset in range(0, rows, size):
     }
     r = requests.get(url, headers=headers, params=payload)
     logs = r.json()['list']
+df['Comment'] = \
+    df['Comment'].str.replace('The following comment has been created: ', '')
 
 # Filter messages from last 7 days
 df['Date'] = df['Date'].apply(pd.to_datetime)
-seven_days_ago = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')
-df = df[df['Date'] >= seven_days_ago].reset_index()
+seven_days_ago = datetime.today() - timedelta(days=7)
+seven_days_ago = seven_days_ago.replace(tzinfo=timezone.utc).timestamp()
+df['timestamp'] = df['Date'].apply(
+    lambda x: x.replace(tzinfo=timezone.utc).timestamp()
+)
+df = df[df['timestamp'] >= seven_days_ago].reset_index()
 
 # Get information about the table and row that the comment was made
 df['Table'] = ''
@@ -89,9 +97,9 @@ for index, row in df.iterrows():
     df.loc[index, 'Row'] = r.json()['Id']
 
 # Message to be sent via email with weekly comments
-df = df.drop(['fk_model_id', 'row_id'], axis=1)
-comments = df.to_string(index=False) if len(df) != 0 else \
-    'There were no comments in the past week'
+df = df[['User', 'Date', 'Table', 'Row', 'Comment']]
+comments = tabulate(df, showindex=False, headers=df.columns) if len(df) != 0 \
+    else 'There were no comments in the past week'
 message = f"""\
 Subject: EPND-glossary weekly comments digest
 
@@ -115,7 +123,7 @@ try:
     server.starttls(context=context)
     server.ehlo()
     server.login(sender, password)
-    server.sendmail(sender, receiver, message)
+    server.sendmail(sender, receiver, message.encode('utf-8'))
 except Exception as e:
     # Print any error messages to stdout
     print(e)
