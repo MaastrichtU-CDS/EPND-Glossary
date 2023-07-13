@@ -105,6 +105,7 @@ Subject: EPND-glossary weekly comments digest
 
 {comments}
 """
+message = message.encode('ascii', errors='replace')
 
 # SMTP configuration
 smtp_server = config['smtp_server']
@@ -123,7 +124,7 @@ try:
     server.starttls(context=context)
     server.ehlo()
     server.login(sender, password)
-    server.sendmail(sender, receiver, message.encode('utf-8'))
+    server.sendmail(sender, receiver, message)
 except Exception as e:
     # Print any error messages to stdout
     print(e)
