@@ -96,15 +96,24 @@ for index, row in df.iterrows():
     r = requests.get(url, headers=headers)
     df.loc[index, 'Row'] = r.json()['Id']
 
-# Message to be sent via email with weekly comments
+# Structure comments
 df = df[['User', 'Date', 'Table', 'Row', 'Comment']]
-comments = tabulate(df, showindex=False, headers=df.columns) if len(df) != 0 \
-    else 'There were no comments in the past week'
+comments = f''
+for index, row in df.iterrows():
+    user = f'User = {row.User}\n'
+    date = f'Date = {row.Date}\n'
+    table = f'Table = {row.Table}\n'
+    item = f'Row = {row.Row}\n'
+    comment = f'Comment = {row.Comment}\n\n\n'
+    comments += user + date + table + item + comment
+comments = 'There were no comments in the past week' if len(comments) == 0 \
+    else comments
+
+# Message to be sent via email with weekly comments
 message = f"""\
 Subject: EPND-glossary weekly comments digest
 
-{comments}
-"""
+{comments}"""
 message = message.encode('ascii', errors='replace')
 
 # SMTP configuration
