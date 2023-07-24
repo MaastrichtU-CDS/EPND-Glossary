@@ -65,31 +65,33 @@ az webapp create --resource-group <group> \
                  -i registry.hub.docker.com/nocodb/nocodb:latest
 ```
 where `<web-address>` is the name you wish to give to your web app, if
-`<web-address>` is `nocodb-test`, you will be able to access the web app at
-`http://nocodb-test.azurewebsites.net/dashboard`, here we also use the latest
-NocoDB image from Docker Hub
+for instance `<web-address>` is `nocodb-test`, you will be able to access the 
+web app at `http://nocodb-test.azurewebsites.net/dashboard`, here we also use 
+the latest NocoDB image from Docker Hub
 
 5. Configure the web app to send requests to port 8080
 ``` bash
 az webapp config appsettings set --resource-group <group> \
                                  --name <web-address> \
-								 --settings WEBSITES_PORT=8080
+				 --settings WEBSITES_PORT=8080
 ```
 
 6. Create a storage account for persistent storage to prevent data loss
 ``` bash
 az storage account create --name <storage-name> \
                           --resource-group <group> \
-						  --location westeurope \
-						  --sku Standard_RAGRS --https-only
+			  --location westeurope \
+			  --sku Standard_RAGRS --https-only
 ```
-where `<storage-name>` is the name you wish to give for the storage account
+where `<storage-name>` is the name you wish to give for the storage account,
+which must be between 3 and 24 characters in length and use numbers and 
+lower-case letters only
 
 7. Create an Azure file share for the web app container
 ``` bash
 az storage share-rm create --resource-group <group> \ 
                            --storage-account <storage-name> \
-						   --name <share-name>
+			   --name <share-name>
 ```
 where `<share-name>` is the name id for the file share
 
@@ -103,13 +105,12 @@ az storage account keys list --resource-group <group> \
 ``` bash
 az webapp config storage-account add --resource-group <group> \
                                      --name <web-address> \
-									 --storage-type AzureFiles \
-									 --account-name <storage-name> \
-									 --share-name <share-name> \
-									 --mount-path /usr/app/data \
-									 --slot-setting True \
-									 --custom-id <webapp-storage> \
-									 --access-key <key>
+				     --storage-type AzureFiles \
+				     --account-name <storage-name> \
+				     --share-name <share-name> \
+				     --mount-path /usr/app/data \
+				     --custom-id <webapp-storage> \
+				     --access-key <key>
 ```
 where `<webapp-storage>` is a custom name given for the share configured within
 the web app, `--mount-path` is the path with the web app data, and `<key>` is
