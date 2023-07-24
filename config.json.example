@@ -1,0 +1,13 @@
+{
+  "base_url": "https://your.nocodb.address.com",
+  "email": "your_nocodb@email.com",
+  "password": "12345",
+  "smtp_server": "smtp.address.com",
+  "smtp_port": 587,
+  "smtp_sender": "your_smtp@email.com",
+  "smtp_pass": "12345",
+  "receiver": [
+    "receiver1@email.com",
+    "receiver2@email.com"
+  ]
+}

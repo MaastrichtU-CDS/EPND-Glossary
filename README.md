@@ -61,3 +61,18 @@ automated with a combination of comments' retrieval using the REST APIs and
 notification of the new comments via email using the `comments_tracking.py` 
 script. A crontab job was scheduled to automatically run the script and 
 moderators got notified of the comments with the desired frequency.
+
+The `config.json.example` has an example of the necessary input to run the
+script. Below is a summary of how this script should be run.
+
+``` bash
+	# Install dependencies (tested in Python 3.10)
+	$ pip install -r requirements.txt
+	
+	# Create config.json input, open the file, and edit it accordingly
+	$ cp config.json.example config.json
+	
+	# Get comments and send them by email
+	$ python comments_tracking.py
+```
+
