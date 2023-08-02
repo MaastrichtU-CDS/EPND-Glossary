@@ -13,7 +13,6 @@ import pandas as pd
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-from tabulate import tabulate
 
 
 # Read configuration variables

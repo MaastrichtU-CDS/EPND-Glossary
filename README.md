@@ -95,7 +95,7 @@ az storage share-rm create --resource-group <group> \
 ```
 where `<share-name>` is the name id for the file share
 
-8. Get the access key for your storage account, which will you need in step 9
+8. Get the access key for your storage account, which you will need in step 9
 ``` bash
 az storage account keys list --resource-group <group> \
                              --account-name <storage-name>
@@ -121,6 +121,8 @@ the key retrieved in step 8
 az webapp browse --resource-group <group> \
                  --name <web-address>
 ```	
+if all went well you should see NocoDB's registration page, mind that the first
+person to sign up will become the super admin
 
 11. If you wish to delete all resources run the following
 ``` bash
