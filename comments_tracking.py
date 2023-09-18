@@ -50,7 +50,7 @@ url = os.path.join(base_url, endpoint)
 r = requests.get(url, headers=headers)
 logs = r.json()['list']
 info = r.json()['pageInfo']
-rows = info['totalRows']
+rows = info['totalRows'] if info['totalRows'] else info['pageSize']
 size = info['pageSize']
 df = pd.DataFrame(columns=['User', 'Date', 'Comment', 'fk_model_id', 'row_id'])
 for offset in range(0, rows, size):
