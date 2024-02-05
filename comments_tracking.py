@@ -43,6 +43,7 @@ url = os.path.join(base_url, endpoint)
 r = requests.get(url, headers=headers)
 content = r.json()['list'][0]
 project_id = content['id']
+# print(f'Project ID: {project_id}')
 
 # Get audit logs for the project and filter only comments
 endpoint = f'api/v1/db/meta/projects/{project_id}/audits'
@@ -59,11 +60,12 @@ for offset in range(0, rows, size):
             df.loc[len(df), df.columns] = \
                 item['user'], item['updated_at'], item['description'], \
                     item['fk_model_id'], item['row_id']
-    payload = {
-        'offset': offset + size
-    }
-    r = requests.get(url, headers=headers, params=payload)
-    logs = r.json()['list']
+    if not r.json()['pageInfo']['isLastPage']:
+        payload = {
+            'offset': offset + size
+        }
+        r = requests.get(url, headers=headers, params=payload)
+        logs = r.json()['list']
 df['Comment'] = \
     df['Comment'].str.replace('The following comment has been created: ', '')
 
@@ -75,6 +77,8 @@ df['timestamp'] = df['Date'].apply(
     lambda x: x.replace(tzinfo=timezone.utc).timestamp()
 )
 df = df[df['timestamp'] >= seven_days_ago].reset_index()
+# print('Comments:')
+# print(df.head)
 
 # Get information about the table and row that the comment was made
 df['Table'] = ''
@@ -133,6 +137,7 @@ try:
     server.ehlo()
     server.login(sender, password)
     server.sendmail(sender, receiver, message)
+    # print('Email sent!')
 except Exception as e:
     # Print any error messages to stdout
     print(e)
